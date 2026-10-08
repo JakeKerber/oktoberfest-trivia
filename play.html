@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b2747">
+<title>OktKerberfest Trivia — Play</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍺</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0b2747;--navy2:#123e6b;--blue:#1f74c4;--sky:#5fb4ea;--cream:#fdf7e8;--gold:#f2b632;--foam:#fffaf0;--pretzel:#b0702f;
+  --A:#1f74c4;--B:#e0a21c;--C:#2f8f4e;--D:#c2412d;
+  --rauten:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='26' viewBox='0 0 44 26'%3E%3Crect width='44' height='26' fill='%23ffffff'/%3E%3Cpath d='M22 0 44 13 22 26 0 13z' fill='%231f74c4'/%3E%3C/svg%3E");
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{font-family:Nunito,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:var(--cream);
+  background:radial-gradient(ellipse at 50% -10%,rgba(95,180,234,.35),transparent 60%),linear-gradient(160deg,var(--navy2),var(--navy) 70%) fixed;
+  min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+h1,h2,.slab{font-family:"Alfa Slab One",Georgia,serif;font-weight:400;margin:0}
+.strip{height:12px;background:var(--rauten) repeat-x;background-size:auto 100%;flex:none}
+header{display:flex;align-items:center;padding:10px 16px;gap:10px}
+header .t{font-family:"Alfa Slab One",serif;color:var(--gold);font-size:19px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header .me{font-weight:900;font-size:15px;background:rgba(255,255,255,.12);border-radius:999px;padding:4px 12px;white-space:nowrap;max-width:50%;overflow:hidden;text-overflow:ellipsis}
+main{flex:1;display:flex;flex-direction:column;padding:8px 16px calc(16px + env(safe-area-inset-bottom))}
+.view{display:none;flex:1;flex-direction:column}
+.view.on{display:flex}
+.card{background:var(--cream);color:#2b1d10;border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.center{align-items:center;justify-content:center;text-align:center}
+.big{font-size:64px;line-height:1.1}
+.h{font-family:"Alfa Slab One",serif;font-size:28px;color:var(--gold);margin:10px 0 6px}
+.p{font-size:18px;font-weight:800;opacity:.9;margin:4px 0}
+label{display:block;font-weight:900;font-size:16px;margin:14px 0 6px;color:var(--navy)}
+label small{font-weight:700;color:var(--pretzel)}
+input{width:100%;font:inherit;font-size:20px;font-weight:800;padding:14px;border-radius:12px;border:3px solid #d8cbb0;background:#fff;color:#2b1d10}
+input:focus{outline:none;border-color:var(--blue)}
+.btn{display:block;width:100%;margin-top:20px;font:inherit;font-weight:900;font-size:22px;border:none;border-radius:14px;padding:16px;background:var(--gold);color:#3a2500;box-shadow:0 5px 0 #a8730a;cursor:pointer}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #a8730a}
+.btn:disabled{opacity:.5}
+.link{background:none;border:none;color:var(--sky);font:inherit;font-weight:800;text-decoration:underline;margin-top:18px;cursor:pointer;font-size:16px}
+.err{color:#b3261e;font-weight:900;margin-top:12px;min-height:1em}
+.joinTitle{text-align:center;margin:10px 0 16px}
+.joinTitle .h{font-size:30px}
+.qmeta{display:flex;justify-content:space-between;font-weight:900;font-size:16px;color:var(--sky);margin-bottom:6px}
+.tbar{height:8px;border-radius:99px;background:rgba(255,255,255,.15);overflow:hidden;margin-bottom:10px}
+.tbar div{height:100%;background:var(--gold);width:100%;transition:width .25s linear}
+.qtext{font-size:20px;font-weight:900;line-height:1.25;padding:14px 16px;margin-bottom:12px}
+.answers{flex:1;display:grid;grid-template-rows:repeat(4,1fr);gap:10px;min-height:300px}
+.ans{display:flex;align-items:center;gap:12px;border:none;border-radius:16px;padding:10px 14px;font:inherit;font-size:20px;font-weight:900;color:#fff;text-align:left;box-shadow:0 5px 0 rgba(0,0,0,.3);cursor:pointer;transition:opacity .2s,transform .1s}
+.ans:active{transform:scale(.97)}
+.ans .l{flex:none;width:46px;height:46px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;font-family:"Alfa Slab One",serif;font-size:24px}
+.a0{background:var(--A)}.a0 .l{color:var(--A)}.a1{background:var(--B)}.a1 .l{color:#a8730a}.a2{background:var(--C)}.a2 .l{color:var(--C)}.a3{background:var(--D)}.a3 .l{color:var(--D)}
+.answers.locked .ans{opacity:.3}
+.answers.locked .ans.picked{opacity:1;box-shadow:0 0 0 4px var(--foam),0 5px 0 rgba(0,0,0,.3)}
+.answers.reveal .ans{opacity:.3}
+.answers.reveal .ans.right{opacity:1;box-shadow:0 0 0 4px #4cd07d}
+.answers.reveal .ans.picked.wrong{opacity:.85;box-shadow:0 0 0 4px #ff6b5b}
+.banner{border-radius:14px;padding:12px;text-align:center;font-weight:900;font-size:20px;margin-bottom:10px}
+.banner.ok{background:#2f8f4e}.banner.no{background:#c2412d}.banner.wait{background:rgba(255,255,255,.14)}
+.score{font-family:"Alfa Slab One",serif;font-size:44px;color:var(--gold)}
+.list{width:100%;margin-top:14px;text-align:left}
+.li{display:flex;justify-content:space-between;font-weight:900;font-size:18px;padding:8px 4px;border-bottom:1px dashed rgba(255,255,255,.2)}
+.li span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px}
+.li.me{color:var(--gold)}
+.status{position:fixed;left:0;right:0;bottom:0;padding:6px 10px calc(6px + env(safe-area-inset-bottom));text-align:center;font-weight:800;font-size:14px;background:#7a2a1d;color:#fff;transform:translateY(100%);transition:transform .3s;z-index:9}
+.status.on{transform:none}
+.spin{width:46px;height:46px;border-radius:50%;border:5px solid rgba(255,255,255,.2);border-top-color:var(--gold);animation:sp 1s linear infinite;margin:20px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (min-height:760px){.qtext{font-size:22px}.ans{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="strip"></div>
+<header><div class="t" id="hTitle">🥨 OktKerberfest Trivia</div><div class="me" id="hMe" style="display:none"></div></header>
+<main>
+  <!-- JOIN -->
+  <section class="view" id="vJoin">
+    <div class="joinTitle"><div class="big">🥨🍺</div><div class="h">Join the game!</div></div>
+    <form class="card" id="joinForm" autocomplete="off">
+      <div id="roomRow"><label for="room">Room code <small>(shown on the TV)</small></label>
+        <input id="room" maxlength="4" autocapitalize="characters" placeholder="ABCD" style="text-transform:uppercase;letter-spacing:.2em"></div>
+      <label for="name">Your name</label>
+      <input id="name" maxlength="18" placeholder="e.g. Oma Helga" autocapitalize="words" enterkeyhint="go">
+      <label for="team">Team name <small>(optional)</small></label>
+      <input id="team" maxlength="18" placeholder="e.g. The Pretzel Pals" autocapitalize="words">
+      <button class="btn" type="submit" id="joinBtn">Join 🍻</button>
+      <div class="err" id="joinErr"></div>
+    </form>
+  </section>
+
+  <!-- CONNECTING -->
+  <section class="view center" id="vConn">
+    <div class="spin"></div><div class="p" id="connMsg">Connecting to the TV…</div>
+    <button class="link" id="connCancel">Change name / room</button>
+  </section>
+
+  <!-- LOBBY / WAITING -->
+  <section class="view center" id="vWait">
+    <div class="big">🍻</div>
+    <div class="h" id="waitTitle">You're in!</div>
+    <div class="p" id="waitMsg">Watch the TV — the game starts soon.</div>
+    <button class="link" id="changeName">Change name or team</button>
+  </section>
+
+  <!-- QUESTION / REVEAL -->
+  <section class="view" id="vQ">
+    <div class="qmeta"><span id="qNum">Q1</span><span id="qInfo"></span></div>
+    <div class="tbar" id="tbar"><div id="tfill"></div></div>
+    <div id="banner" class="banner wait" style="display:none"></div>
+    <div class="card qtext" id="qText"></div>
+    <div class="answers" id="answers"></div>
+  </section>
+
+  <!-- SCOREBOARD / FINAL -->
+  <section class="view center" id="vBoard">
+    <div class="big" id="bIcon">📊</div>
+    <div class="h" id="bTitle">Scoreboard</div>
+    <div class="p">You're <b id="bRank">#1</b> with</div>
+    <div class="score" id="bScore">0</div>
+    <div class="p" id="bTeam"></div>
+    <div class="list" id="bList"></div>
+  </section>
+</main>
+<div class="status" id="status">Reconnecting…</div>
+
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
+<script>
+/* =====================================================================
+   PLAYER (PHONE) LOGIC — connects to the TV's PeerJS id, sends name and
+   answers, and renders whatever state the TV sends back.
+   ===================================================================== */
+(function(){
+"use strict";
+const PEER_PREFIX = "kerber-okt-trivia-";   // must match index.html
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = n => (Math.round((n || 0) * 10) / 10).toString();
+const randId = () => Array.from({ length: 16 }, () => "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(Math.random() * 36)]).join("");
+
+const params = new URLSearchParams(location.search);
+let room = (params.get("room") || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4);
+let me = null;            // {cid, name, team}
+let peer = null, conn = null, joined = false, wantConnected = false;
+let retryT = null, openT = null, lastHostMsg = 0, state = null, pendingAnswer = null, wakeLock = null;
+
+function storeKey(){ return "okt-trivia-player-" + room; }
+function loadMe(){ try { return JSON.parse(localStorage.getItem(storeKey()) || "null"); } catch(e){ return null; } }
+function saveMe(){ try { localStorage.setItem(storeKey(), JSON.stringify(me)); } catch(e){} }
+
+function view(id){ for (const v of document.querySelectorAll(".view")) v.classList.toggle("on", v.id === id); }
+function status(msg){ $("status").textContent = msg || ""; $("status").classList.toggle("on", !!msg); }
+
+/* ---------------- connection ---------------- */
+function connect(){
+  wantConnected = true; clearTimeout(retryT);
+  if (typeof Peer === "undefined") { status("Couldn't load the game library — check your internet and reload."); return; }
+  if (!peer || peer.destroyed) {
+    peer = new Peer({ debug: 1 });
+    peer.on("open", openConn);
+    peer.on("disconnected", () => { if (!peer.destroyed) setTimeout(() => { try { peer.reconnect(); } catch(e){} }, 1000); });
+    peer.on("error", err => {
+      console.warn("peer error", err.type, err);
+      if (err.type === "peer-unavailable") { status("Can't find room " + room + " — is the TV page open? Retrying…"); if (!joined) $("connMsg").textContent = "Looking for room " + room + "… (make sure the code matches the TV)"; scheduleRetry(3000); }
+      else if (["network", "server-error", "socket-error", "socket-closed", "unavailable-id"].includes(err.type)) { try { peer.destroy(); } catch(e){} peer = null; scheduleRetry(3000); }
+      else scheduleRetry(3000);
+    });
+  } else if (peer.open) openConn();
+  else if (peer.disconnected) { try { peer.reconnect(); } catch(e){} }
+}
+function openConn(){
+  if (!wantConnected) return;
+  if (conn) { try { conn.close(); } catch(e){} }
+  const c = peer.connect(PEER_PREFIX + room.toLowerCase(), { reliable: true, serialization: "json" });
+  conn = c;
+  clearTimeout(openT);
+  openT = setTimeout(() => { if (conn === c && !c.open) { try { c.close(); } catch(e){} scheduleRetry(500); } }, 12000);
+  c.on("open", () => {
+    if (conn !== c) return;
+    clearTimeout(openT); lastHostMsg = Date.now();
+    c.send({ type: "join", cid: me.cid, name: me.name, team: me.team });
+  });
+  c.on("data", d => { if (conn === c) { lastHostMsg = Date.now(); onMsg(d); } });
+  c.on("close", () => { if (conn === c) { conn = null; if (wantConnected) { status("Connection lost — reconnecting…"); scheduleRetry(1500); } } });
+  c.on("error", e => console.warn("conn error", e));
+}
+function scheduleRetry(ms){ clearTimeout(retryT); if (wantConnected) retryT = setTimeout(connect, ms); }
+function send(msg){ try { if (conn && conn.open) { conn.send(msg); return true; } } catch(e){} return false; }
+
+// keep-alive + dead-link detection
+setInterval(() => {
+  if (!wantConnected) return;
+  if (conn && conn.open) {
+    send({ type: "ping" });
+    if (Date.now() - lastHostMsg > 16000) { status("TV not responding — reconnecting…"); try { conn.close(); } catch(e){} conn = null; scheduleRetry(200); }
+  }
+}, 5000);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible" || !wantConnected) return;
+  requestWake();
+  if (!conn || !conn.open || Date.now() - lastHostMsg > 8000) { status("Reconnecting…"); try { conn && conn.close(); } catch(e){} conn = null; connect(); }
+});
+window.addEventListener("pagehide", () => { send({ type: "leave" }); });
+
+/* ---------------- messages ---------------- */
+function onMsg(d){
+  if (!d || typeof d !== "object") return;
+  if (d.type === "joined") {
+    joined = true; status("");
+    me.name = d.name; me.team = d.team; saveMe(); renderMe(); requestWake();
+    if (pendingAnswer && state && state.phase === "question") send(pendingAnswer);
+  } else if (d.type === "state") {
+    state = d; status(""); render();
+  } else if (d.type === "error") {
+    wantConnected = false; joined = false; try { conn && conn.close(); } catch(e){}
+    showJoin(d.msg || "Couldn't join.");
+  } else if (d.type === "kicked") {
+    wantConnected = false; joined = false; try { localStorage.removeItem(storeKey()); } catch(e){}
+    me = { cid: randId(), name: "", team: "" }; showJoin("The host removed you. You can join again with a different name.");
+  } else if (d.type === "replaced") {
+    wantConnected = false; status("");
+    view("vConn"); $("connMsg").textContent = "You joined from another tab or device. Reload to play here.";
+  }
+}
+
+/* ---------------- rendering ---------------- */
+function renderMe(){
+  const h = $("hMe");
+  if (me && me.name && joined) { h.style.display = ""; h.textContent = "👤 " + me.name + (state && state.me ? " · " + fmt(state.me.score) : ""); }
+  else h.style.display = "none";
+}
+let tTimer = null;
+function render(){
+  const s = state; if (!s) return;
+  if (s.title) { $("hTitle").textContent = "🥨 " + s.title; document.title = s.title; }
+  renderMe();
+  clearInterval(tTimer);
+  if (s.phase === "lobby") {
+    view("vWait");
+    $("waitTitle").textContent = "You're in, " + (me.name || "friend") + "!";
+    $("waitMsg").innerHTML = (me.team ? "Team: <b>" + esc(me.team) + "</b><br>" : "") + "Watch the TV — the game starts soon. 🥨<br>" + s.players + " player" + (s.players === 1 ? "" : "s") + " joined.";
+    $("changeName").style.display = "";
+    return;
+  }
+  if ((s.phase === "question" || s.phase === "reveal") && s.q) {
+    view("vQ");
+    $("qNum").textContent = "Question " + (s.qi + 1) + " of " + s.total;
+    $("qInfo").textContent = "Score " + fmt(s.me.score);
+    $("qText").textContent = s.q.text;
+    const answered = s.answer != null || (pendingAnswer && pendingAnswer.qi === s.qi);
+    const pick = s.answer != null ? s.answer : (pendingAnswer && pendingAnswer.qi === s.qi ? pendingAnswer.c : null);
+    const box = $("answers");
+    box.className = "answers" + (s.phase === "reveal" ? " reveal" : answered ? " locked" : "");
+    box.innerHTML = s.q.choices.map((c, i) => {
+      let cls = "ans a" + i + (pick === i ? " picked" : "");
+      if (s.phase === "reveal") cls += i === s.correct ? " right" : " wrong";
+      return '<button class="' + cls + '" data-i="' + i + '"' + (answered || s.phase !== "question" ? " disabled" : "") + '><span class="l">' + "ABCD"[i] + "</span><span>" + esc(c) + "</span></button>";
+    }).join("");
+    const b = $("banner");
+    if (s.phase === "reveal") {
+      const ok = s.answer === s.correct;
+      b.style.display = ""; b.className = "banner " + (ok ? "ok" : "no");
+      b.textContent = ok ? "✅ Richtig! +1" + (s.gotBonus ? " ⚡ +0.5 fastest!" : "") : s.answer == null ? "⏰ No answer — it was " + "ABCD"[s.correct] : "❌ Not quite — it was " + "ABCD"[s.correct];
+      if (navigator.vibrate) navigator.vibrate(ok ? 60 : [40, 60, 40]);
+    } else if (answered) {
+      b.style.display = ""; b.className = "banner wait"; b.textContent = "🔒 Locked in " + "ABCD"[pick] + " — eyes on the TV!";
+    } else b.style.display = "none";
+    // countdown bar
+    const tb = $("tbar");
+    if (s.phase === "question" && s.timerMs) {
+      tb.style.visibility = "visible";
+      const end = Date.now() + s.remainingMs;
+      const upd = () => { const left = Math.max(0, end - Date.now()); $("tfill").style.width = (100 * left / s.timerMs) + "%"; };
+      upd(); tTimer = setInterval(upd, 250);
+    } else tb.style.visibility = "hidden";
+    return;
+  }
+  if (s.phase === "board" || s.phase === "final") {
+    view("vBoard");
+    const fin = s.phase === "final";
+    $("bIcon").textContent = fin ? (s.me.rank === 1 ? "🏆" : s.me.rank <= 3 ? ["", "🥇", "🥈", "🥉"][s.me.rank] : "🍻") : "📊";
+    $("bTitle").textContent = fin ? "Final results — Prost!" : "Scoreboard after Q" + (s.qi + 1);
+    $("bRank").textContent = "#" + s.me.rank + " of " + s.players;
+    $("bScore").textContent = fmt(s.me.score) + (s.me.score === 1 ? " point" : " points");
+    $("bTeam").innerHTML = s.me.team ? "Team <b>" + esc(s.me.team) + "</b>" + (s.myTeamRank ? " is #" + s.myTeamRank : "") : "";
+    let html = (s.top || []).map(r => '<div class="li' + (r.name === s.me.name ? " me" : "") + '"><span>#' + r.rank + " " + esc(r.name) + "</span><span>" + fmt(r.score) + "</span></div>").join("");
+    if (s.teams && s.teams.length) html += '<div class="p" style="margin-top:14px">Teams</div>' + s.teams.map((t, i) => '<div class="li"><span>' + (i + 1) + ". " + esc(t.name) + "</span><span>" + fmt(t.score) + "</span></div>").join("");
+    $("bList").innerHTML = html;
+    if (fin && navigator.vibrate) navigator.vibrate(120);
+  }
+}
+$("answers").addEventListener("click", e => {
+  const b = e.target.closest(".ans"); if (!b || b.disabled || !state || state.phase !== "question") return;
+  const c = +b.dataset.i;
+  pendingAnswer = { type: "answer", qi: state.qi, c };
+  send(pendingAnswer);
+  render();   // show "locked in" immediately; TV confirms with the next state
+});
+
+/* ---------------- join flow ---------------- */
+function showJoin(err){
+  view("vJoin"); status("");
+  $("room").value = room;
+  $("name").value = (me && me.name) || ""; $("team").value = (me && me.team) || "";
+  $("joinErr").textContent = err || "";
+  $("roomRow").style.display = params.get("room") && room ? "none" : "";
+  setTimeout(() => (room ? $("name") : $("room")).focus(), 50);
+}
+$("joinForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const r = $("room").value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4);
+  const name = $("name").value.trim().slice(0, 18), team = $("team").value.trim().slice(0, 18);
+  if (r.length !== 4) { $("joinErr").textContent = "Enter the 4-character room code from the TV."; return; }
+  if (!name) { $("joinErr").textContent = "Please enter your name."; return; }
+  if (r !== room) { room = r; const prev = loadMe(); me = prev || null; history.replaceState(null, "", "?room=" + room); }
+  me = { cid: (me && me.cid) || randId(), name, team };
+  saveMe(); startJoin();
+});
+function startJoin(){
+  joined = false; view("vConn"); $("connMsg").textContent = "Connecting to the TV…";
+  connect();
+}
+function leaveToForm(){
+  wantConnected = false; joined = false; clearTimeout(retryT);
+  try { conn && conn.close(); } catch(e){} conn = null; showJoin("");
+}
+$("connCancel").onclick = leaveToForm;
+$("changeName").onclick = leaveToForm;
+
+async function requestWake(){
+  try { if ("wakeLock" in navigator && document.visibilityState === "visible" && !wakeLock) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => { wakeLock = null; }); } } catch(e){}
+}
+
+/* boot: auto-rejoin with the saved name (survives refreshes) */
+me = room ? loadMe() : null;
+if (room && me && me.name) startJoin();
+else { me = me || { cid: randId(), name: "", team: "" }; showJoin(""); }
+window.__player = { get state(){ return state; }, get joined(){ return joined; } };
+})();
+</script>
+</body>
+</html>

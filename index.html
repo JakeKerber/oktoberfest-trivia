@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OktKerberfest Trivia — TV</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥨</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0b2747; --navy2:#123e6b; --blue:#1f74c4; --sky:#5fb4ea;
+  --cream:#fdf7e8; --gold:#f2b632; --foam:#fffaf0; --brown:#7a4a22; --pretzel:#b0702f;
+  --A:#1f74c4; --B:#e0a21c; --C:#2f8f4e; --D:#c2412d;
+  --rauten:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='26' viewBox='0 0 44 26'%3E%3Crect width='44' height='26' fill='%23ffffff'/%3E%3Cpath d='M22 0 44 13 22 26 0 13z' fill='%231f74c4'/%3E%3C/svg%3E");
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden}
+body{
+  font-family:Nunito,system-ui,"Segoe UI",Arial,sans-serif; color:var(--cream);
+  background:
+    radial-gradient(ellipse at 50% -20%, rgba(95,180,234,.35), transparent 60%),
+    linear-gradient(160deg,var(--navy2),var(--navy) 70%);
+  display:flex;flex-direction:column;
+}
+h1,h2,h3,.slab{font-family:"Alfa Slab One",Georgia,serif;font-weight:400;letter-spacing:.01em;margin:0}
+.strip{height:2.2vh;min-height:14px;background:var(--rauten) repeat-x;background-size:auto 100%;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+header{display:flex;align-items:center;gap:1.5vw;padding:1.2vh 2.5vw;flex:none}
+header .title{font-family:"Alfa Slab One",serif;font-size:clamp(20px,2.4vw,46px);color:var(--gold);text-shadow:0 3px 0 rgba(0,0,0,.35)}
+header .spacer{flex:1}
+.pill{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:.5vh 1.2vw;font-size:clamp(14px,1.3vw,26px);font-weight:800;white-space:nowrap}
+.pill b{color:var(--gold)}
+.dot{display:inline-block;width:.8em;height:.8em;border-radius:50%;background:#999;margin-right:.4em;vertical-align:-.05em}
+.dot.ok{background:#4cd07d;box-shadow:0 0 8px #4cd07d}.dot.warn{background:var(--gold)}.dot.bad{background:#e5533d}
+main{flex:1;position:relative;min-height:0}
+.screen{position:absolute;inset:0;padding:1vh 3vw 2vh;display:none;flex-direction:column}
+.screen.on{display:flex}
+.card{background:var(--cream);color:#2b1d10;border-radius:22px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+
+/* ---------- Lobby ---------- */
+#lobby{flex-direction:row;gap:3vw;align-items:stretch}
+.joinCard{flex:0 0 auto;width:min(44vw,62vh);display:flex;flex-direction:column;align-items:center;padding:2.5vh 2vw;text-align:center}
+.joinCard h2{font-size:clamp(24px,2.8vw,56px);color:var(--navy)}
+.joinCard .qr{width:100%;max-width:48vh;aspect-ratio:1;margin:1.5vh 0;border:6px solid var(--navy);border-radius:14px;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center}
+.joinCard .qr svg{width:100%;height:100%;display:block}
+.joinCard .url{font-size:clamp(13px,1.15vw,24px);font-weight:800;word-break:break-all;color:var(--navy2)}
+.joinCard .code{margin-top:1vh;font-size:clamp(16px,1.6vw,32px);font-weight:800}
+.joinCard .code span{font-family:"Alfa Slab One",serif;color:var(--D);letter-spacing:.12em;font-size:1.4em}
+.warnbox{margin-top:1vh;background:#fff1c7;border:2px solid var(--gold);border-radius:10px;padding:.6vh .8vw;font-size:clamp(12px,.95vw,18px);color:#5b3b00;font-weight:700;text-align:left}
+.lobbyRight{flex:1;display:flex;flex-direction:column;min-width:0}
+.lobbyRight h1{font-size:clamp(34px,4.6vw,96px);color:var(--foam);text-shadow:0 4px 0 rgba(0,0,0,.35);line-height:1.05}
+.lobbyRight .sub{font-size:clamp(18px,1.8vw,36px);font-weight:800;color:var(--sky);margin:.6vh 0 2vh}
+.players{display:flex;flex-wrap:wrap;gap:1vh .8vw;align-content:flex-start;overflow:hidden;flex:1}
+.chip{background:var(--foam);color:var(--navy);border-radius:999px;padding:.7vh 1.2vw;font-size:clamp(16px,1.6vw,32px);font-weight:900;box-shadow:0 4px 0 rgba(0,0,0,.25);animation:pop .35s ease-out;cursor:pointer;user-select:none}
+.chip small{font-weight:800;color:var(--pretzel);font-size:.7em;margin-left:.4em}
+.chip.off{opacity:.45}
+.empty{font-size:clamp(18px,1.8vw,34px);opacity:.75;font-weight:700}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.settings{display:flex;flex-wrap:wrap;gap:.8vh 1.6vw;align-items:center;background:rgba(0,0,0,.22);border-radius:14px;padding:1.2vh 1.2vw;font-size:clamp(13px,1.05vw,20px);font-weight:800;margin-top:1.5vh}
+.settings label{display:flex;align-items:center;gap:.4em;white-space:nowrap}
+.settings select,.settings input{font:inherit;border-radius:8px;border:none;padding:.2em .4em}
+.settings input[type=checkbox]{width:1.2em;height:1.2em}
+
+/* ---------- Question ---------- */
+.qtop{display:flex;align-items:center;gap:2vw;font-size:clamp(18px,1.8vw,36px);font-weight:900}
+.qtop .qnum{color:var(--gold)}
+.qtop .spacer{flex:1}
+.timer{position:relative;width:9vh;height:9vh;flex:none}
+.timer svg{width:100%;height:100%;transform:rotate(-90deg)}
+.timer circle{fill:none;stroke-width:10}
+.timer .bg{stroke:rgba(255,255,255,.15)}
+.timer .fg{stroke:var(--gold);stroke-linecap:round;transition:stroke-dashoffset .25s linear}
+.timer .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Alfa Slab One",serif;font-size:3.6vh}
+.timer.low .fg{stroke:#e5533d}
+.qtext{flex:0 0 auto;margin:2.5vh 0 3vh;padding:3vh 2.5vw;font-size:clamp(30px,3.7vw,78px);line-height:1.15;font-weight:900;text-align:center;display:flex;align-items:center;justify-content:center;min-height:24vh}
+.choices{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2vh 1.6vw;min-height:0}
+.choice{position:relative;display:flex;align-items:center;gap:1.4vw;border-radius:20px;padding:1vh 1.6vw;color:#fff;font-size:clamp(22px,2.7vw,58px);font-weight:900;box-shadow:0 8px 0 rgba(0,0,0,.25);transition:opacity .4s,transform .4s,filter .4s;overflow:hidden}
+.choice .letter{flex:none;width:1.6em;height:1.6em;border-radius:14px;background:rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center;font-family:"Alfa Slab One",serif}
+.choice .txt{flex:1;line-height:1.1}
+.choice .cnt{flex:none;font-size:.7em;background:rgba(0,0,0,.25);border-radius:999px;padding:.1em .6em;display:none}
+.choice .bar{position:absolute;left:0;bottom:0;height:.6vh;background:rgba(255,255,255,.8);width:0;transition:width .8s}
+.c0{background:var(--A)}.c0 .letter{color:var(--A)} .c1{background:var(--B)}.c1 .letter{color:#a8730a} .c2{background:var(--C)}.c2 .letter{color:var(--C)} .c3{background:var(--D)}.c3 .letter{color:var(--D)}
+.revealed .choice .cnt{display:block}
+.revealed .choice.wrong{opacity:.28;filter:grayscale(.6)}
+.revealed .choice.right{transform:scale(1.03);box-shadow:0 0 0 6px var(--foam),0 0 40px 10px rgba(255,250,240,.55)}
+.revealed .choice.right .letter::after{content:"✓"}
+.revealed .choice.right .letter span{display:none}
+.factRow{flex:none;display:none;margin-top:2.4vh;gap:1.5vw;align-items:stretch}
+.revealed .factRow{display:flex}
+.fact{flex:1;padding:1.4vh 1.5vw;font-size:clamp(16px,1.6vw,32px);font-weight:800;display:flex;align-items:center;gap:.8vw}
+.fact .ico{font-size:1.6em}
+.stats{flex:none;padding:1.4vh 1.5vw;font-size:clamp(16px,1.5vw,30px);font-weight:900;background:rgba(0,0,0,.25);border-radius:22px;display:flex;flex-direction:column;justify-content:center}
+.stats .bonus{color:var(--gold)}
+
+/* ---------- Scoreboard / Final ---------- */
+.boardHead{display:flex;align-items:baseline;gap:2vw;margin-bottom:2vh}
+.boardHead h1{font-size:clamp(34px,4.2vw,88px);color:var(--gold);text-shadow:0 4px 0 rgba(0,0,0,.35)}
+.boardHead .sub{font-size:clamp(18px,1.7vw,34px);font-weight:800;color:var(--sky)}
+.boardWrap{flex:1;display:flex;gap:2.5vw;min-height:0;overflow:hidden}
+.rows{flex:1;min-width:0;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:1.1vh 1.6vw;align-content:start}
+.row{display:flex;align-items:center;gap:1vw;background:var(--cream);color:#2b1d10;border-radius:14px;padding:.9vh 1.1vw;font-size:clamp(16px,1.8vw,36px);font-weight:900;box-shadow:0 5px 0 rgba(0,0,0,.25);animation:slide .4s ease-out both}
+.row .rk{width:2.2em;font-family:"Alfa Slab One",serif;color:var(--navy2)}
+.row .nm{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .tm{font-size:.62em;color:var(--pretzel);margin-left:.4em}
+.row .pts{font-family:"Alfa Slab One",serif;color:var(--navy)}
+.row .dl{font-size:.65em;color:var(--C);width:3.4em;text-align:right}
+.row.g1{background:#ffe08a}.row.g2{background:#e9eef3}.row.g3{background:#f1d2b0}
+.row.off{opacity:.7}
+@keyframes slide{from{transform:translateX(-30px);opacity:0}to{transform:none;opacity:1}}
+.teams{flex:0 0 25vw;display:none;overflow:hidden;flex-direction:column;gap:1.1vh;background:rgba(0,0,0,.22);border-radius:20px;padding:2vh 1.5vw;min-width:0}
+.teams.on{display:flex}
+.teams h3{font-size:clamp(20px,2vw,40px);color:var(--sky);margin-bottom:.6vh}
+.trow{display:flex;justify-content:space-between;gap:1vw;font-size:clamp(17px,1.8vw,36px);font-weight:900;border-bottom:1px dashed rgba(255,255,255,.2);padding-bottom:.6vh}
+.trow .tn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.trow .tp{flex:none}
+.trow .tp{color:var(--gold);font-family:"Alfa Slab One",serif}
+.trow small{color:var(--sky);font-size:.65em;margin-left:.4em}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:2vw;margin:1vh 0 2.5vh}
+.pod{width:22vw;text-align:center;display:flex;flex-direction:column;align-items:center}
+.pod .medal{font-size:7vh}
+.pod .pn{font-size:clamp(22px,2.6vw,54px);font-weight:900;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod .pp{font-family:"Alfa Slab One",serif;color:var(--gold);font-size:clamp(18px,2vw,40px)}
+.pod .block{width:100%;border-radius:16px 16px 0 0;margin-top:1vh;background:var(--rauten);background-size:44px 26px;box-shadow:inset 0 0 0 4px rgba(255,255,255,.6)}
+.pod.p1 .block{height:16vh}.pod.p2 .block{height:11vh}.pod.p3 .block{height:7vh}
+#final .rows{grid-auto-flow:row;grid-template-columns:repeat(3,1fr)}
+#final .row{font-size:clamp(15px,1.5vw,30px)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:5}
+
+/* ---------- Controls ---------- */
+.controls{flex:none;display:flex;flex-wrap:wrap;gap:.6vw;align-items:center;padding:1vh 2.5vw 1.2vh;background:rgba(0,0,0,.28);transition:opacity .3s}
+.controls.hidden{display:none}
+.controls:not(:hover){opacity:.55}
+.btn{font:inherit;font-weight:900;font-size:clamp(13px,1vw,20px);border:none;border-radius:10px;padding:.7vh 1vw;background:var(--foam);color:var(--navy);cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.3)}
+.btn:hover{filter:brightness(1.07)}.btn:active{transform:translateY(2px);box-shadow:none}
+.btn.primary{background:var(--gold);color:#3a2500}
+.btn:disabled{opacity:.4;cursor:default}
+.btn kbd{font-family:inherit;background:rgba(0,0,0,.12);border-radius:5px;padding:0 .35em;margin-left:.35em;font-size:.85em}
+.controls .hint{margin-left:auto;font-size:clamp(11px,.85vw,16px);opacity:.8;font-weight:700}
+.modal{position:fixed;inset:0;background:rgba(5,20,40,.75);display:none;align-items:center;justify-content:center;z-index:10}
+.modal.on{display:flex}
+.modal .card{padding:4vh 3vw;max-width:60vw;text-align:center;font-size:clamp(16px,1.5vw,28px);font-weight:800}
+.modal h2{color:var(--navy);font-size:clamp(24px,2.6vw,50px);margin-bottom:2vh}
+.modal .btns{display:flex;gap:1vw;justify-content:center;margin-top:3vh}
+.modal .btn{font-size:clamp(16px,1.4vw,26px);padding:1vh 1.6vw;background:var(--navy);color:#fff}
+.modal .btn.primary{background:var(--gold);color:#3a2500}
+.toast{position:fixed;left:50%;top:9vh;transform:translateX(-50%);background:var(--foam);color:var(--navy);padding:1vh 2vw;border-radius:999px;font-weight:900;font-size:clamp(14px,1.3vw,26px);box-shadow:0 8px 30px rgba(0,0,0,.4);opacity:0;transition:opacity .3s;z-index:20;pointer-events:none}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="strip"></div>
+<header>
+  <div class="title" id="title">🥨 OktKerberfest Trivia 🍺</div>
+  <div class="spacer"></div>
+  <div class="pill" id="roomPill">Room <b id="roomCode">····</b></div>
+  <div class="pill"><span class="dot" id="netDot"></span><span id="netText">Starting…</span></div>
+  <div class="pill" id="playerPill">👥 <b id="playerCount">0</b></div>
+</header>
+
+<main>
+  <!-- LOBBY -->
+  <section class="screen" id="lobby">
+    <div class="card joinCard">
+      <h2>📱 Scan to join!</h2>
+      <div class="qr" id="qr"><span style="color:#999">QR code loading…</span></div>
+      <div class="url" id="joinUrl"></div>
+      <div class="code">or enter room code <span id="codeBig">····</span></div>
+      <div class="warnbox" id="hostWarn" style="display:none"></div>
+    </div>
+    <div class="lobbyRight">
+      <h1 id="lobbyTitle">Willkommen zur OktKerberfest Trivia!</h1>
+      <div class="sub" id="lobbySub">Grab a pretzel, scan the code, and pick a name. Teams optional!</div>
+      <div class="players" id="lobbyPlayers"></div>
+      <div class="settings">
+        <label>⏱ Timer
+          <select id="setTimer">
+            <option value="0">Off</option><option value="15">15 s</option><option value="20" selected>20 s</option>
+            <option value="30">30 s</option><option value="45">45 s</option>
+          </select></label>
+        <label><input type="checkbox" id="setBonus" checked> ⚡ Speed bonus (+0.5 to fastest correct)</label>
+        <label><input type="checkbox" id="setShuffle"> 🔀 Shuffle questions</label>
+        <label>❓ Questions <select id="setCount"></select></label>
+        <label><input type="checkbox" id="setKids"> 🧒 Kid-friendly only</label>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUESTION / REVEAL -->
+  <section class="screen" id="question">
+    <div class="qtop">
+      <div class="qnum" id="qNum">Question 1 of 40</div>
+      <div class="spacer"></div>
+      <div id="answered">0 / 0 answered</div>
+      <div class="timer" id="timer">
+        <svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="44"/><circle class="fg" id="timerFg" cx="50" cy="50" r="44" stroke-dasharray="276.46" stroke-dashoffset="0"/></svg>
+        <div class="num" id="timerNum">20</div>
+      </div>
+    </div>
+    <div class="card qtext" id="qText"></div>
+    <div class="choices" id="choices"></div>
+    <div class="factRow">
+      <div class="card fact" id="fact"><span class="ico">🥨</span><span id="factText"></span></div>
+      <div class="stats" id="stats"></div>
+    </div>
+  </section>
+
+  <!-- SCOREBOARD -->
+  <section class="screen" id="board">
+    <div class="boardHead"><h1>🍺 Scoreboard</h1><div class="sub" id="boardSub"></div></div>
+    <div class="boardWrap">
+      <div class="rows" id="boardRows"></div>
+      <div class="teams" id="boardTeams"></div>
+    </div>
+  </section>
+
+  <!-- FINAL -->
+  <section class="screen" id="final">
+    <div class="boardHead"><h1>🏆 Prost! Final Results</h1><div class="sub" id="finalSub"></div></div>
+    <div class="podium" id="podium"></div>
+    <div class="boardWrap">
+      <div class="rows" id="finalRows"></div>
+      <div class="teams" id="finalTeams"></div>
+    </div>
+  </section>
+</main>
+
+<div class="controls" id="controls">
+  <button class="btn primary" id="bStart">▶ Start<kbd>S</kbd></button>
+  <button class="btn" id="bReveal">👀 Reveal<kbd>R</kbd></button>
+  <button class="btn" id="bBoard">📊 Scoreboard<kbd>B</kbd></button>
+  <button class="btn primary" id="bNext">⏭ Next<kbd>N</kbd></button>
+  <button class="btn" id="bEnd">🏁 End game<kbd>E</kbd></button>
+  <button class="btn" id="bFull">⛶ Fullscreen<kbd>F</kbd></button>
+  <button class="btn" id="bNew">🔄 New game</button>
+  <span class="hint">Space/Enter = next step · H = hide this bar · click a player in the lobby to remove them</span>
+</div>
+
+<div class="modal" id="modal"><div class="card"><h2 id="mTitle"></h2><div id="mBody"></div><div class="btns" id="mBtns"></div></div></div>
+<div class="toast" id="toast"></div>
+<canvas id="confetti"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script src="questions.js"></script>
+<script>
+/* =====================================================================
+   HOST (TV) LOGIC — the TV page is the hub. It holds all game state and
+   talks to every phone over a WebRTC data channel (PeerJS).
+   ===================================================================== */
+(function(){
+"use strict";
+const PEER_PREFIX = "kerber-okt-trivia-";          // peer id = prefix + room code (lowercase)
+const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+const STORE_KEY = "okt-trivia-host-v1";
+const SPEED_BONUS = 0.5;
+const ALL_Q = (window.TRIVIA_QUESTIONS || []).filter(q => q && q.q && Array.isArray(q.choices) && q.choices.length === 4);
+const TITLE = window.GAME_TITLE || "OktKerberfest Trivia";
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = n => (Math.round(n * 10) / 10).toString();
+const now = () => Date.now();
+const newCode = () => Array.from({length: 4}, () => CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]).join("");
+
+/* ---------------- state ---------------- */
+let S = null;          // persisted game state
+const conns = {};      // pid -> DataConnection
+let peer = null, peerRetries = 0, tickTimer = null;
+
+function freshState(code, keepPlayers){
+  const st = {
+    v: 1, code: code || newCode(), phase: "lobby", qi: -1, game: [],
+    qStartAt: 0, qEndsAt: 0, answers: {}, revealed: {}, bonusOn: {},
+    players: {}, nextPid: 1, updatedAt: now(),
+    settings: { timer: 20, speedBonus: true, shuffle: false, count: ALL_Q.length, kidsOnly: false }
+  };
+  if (keepPlayers && S) {
+    st.settings = S.settings; st.nextPid = S.nextPid;
+    for (const [pid, p] of Object.entries(S.players)) st.players[pid] = { name: p.name, team: p.team, cid: p.cid, joinedAt: p.joinedAt };
+  }
+  return st;
+}
+let saveTimer = null;
+function save(){ clearTimeout(saveTimer); saveTimer = setTimeout(() => { S.updatedAt = now(); try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch(e){} }, 150); }
+
+/* ---------------- scoring ---------------- */
+function fastestCorrect(qi){
+  const ans = S.answers[qi] || {}, correct = S.game[qi] && S.game[qi].answer;
+  let best = null;
+  for (const [pid, a] of Object.entries(ans)) if (a.c === correct && (!best || a.ms < ans[best].ms)) best = pid;
+  return best;
+}
+function pointsFor(pid, qi){
+  if (!S.revealed[qi]) return 0;
+  const a = (S.answers[qi] || {})[pid];
+  if (!a || a.c !== S.game[qi].answer) return 0;
+  return 1 + (S.bonusOn[qi] && fastestCorrect(qi) === pid ? SPEED_BONUS : 0);
+}
+function scoreOf(pid){ let t = 0; for (let qi = 0; qi < S.game.length; qi++) t += pointsFor(pid, qi); return t; }
+function ranking(){
+  const list = Object.entries(S.players).map(([pid, p]) => ({ pid, name: p.name, team: p.team, score: scoreOf(pid), delta: S.qi >= 0 ? pointsFor(pid, S.qi) : 0, online: isOnline(pid) }));
+  list.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+  let rank = 0, prev = null;
+  list.forEach((r, i) => { if (r.score !== prev) { rank = i + 1; prev = r.score; } r.rank = rank; });
+  return list;
+}
+function teamTotals(rk){
+  const t = {};
+  for (const r of rk) {
+    if (!r.team) continue;
+    const k = r.team.toLowerCase();
+    if (!t[k]) t[k] = { name: r.team, score: 0, members: 0 };
+    t[k].score += r.score; t[k].members++;
+  }
+  return Object.values(t).sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+}
+function isOnline(pid){ const c = conns[pid]; return !!(c && c.open && now() - (c._lastSeen || 0) < 20000); }
+function onlinePids(){ return Object.keys(S.players).filter(isOnline); }
+
+/* ---------------- networking ---------------- */
+function setNet(state, text){ $("netDot").className = "dot " + state; $("netText").textContent = text; }
+
+function startPeer(){
+  if (typeof Peer === "undefined") { setNet("bad", "PeerJS failed to load (no internet?)"); return; }
+  if (peer) { try { peer.destroy(); } catch(e){} }
+  setNet("warn", "Connecting…");
+  peer = new Peer(PEER_PREFIX + S.code.toLowerCase(), { debug: 1 });
+  peer.on("open", () => { peerRetries = 0; setNet("ok", "Online"); });
+  peer.on("connection", setupConn);
+  peer.on("disconnected", () => {
+    setNet("warn", "Reconnecting…");
+    setTimeout(() => { if (peer && !peer.destroyed && peer.disconnected) try { peer.reconnect(); } catch(e){} }, 1500);
+  });
+  peer.on("error", err => {
+    console.warn("peer error", err.type, err);
+    if (err.type === "unavailable-id") {
+      // Happens right after a TV-page refresh: the server still holds our old id for a few seconds.
+      peerRetries++;
+      setNet("warn", "Re-claiming room " + S.code + "… (" + peerRetries + ")");
+      if (peerRetries > 15) {
+        modal("Room code busy", "Room <b>" + esc(S.code) + "</b> seems to be in use elsewhere (another TV tab open?). Close other tabs, or switch to a new room code (phones will need to re-scan; scores are kept).",
+          [["Keep trying", () => { peerRetries = 0; startPeer(); }], ["New room code", () => { S.code = newCode(); save(); renderAll(); peerRetries = 0; startPeer(); }, true]]);
+        return;
+      }
+      setTimeout(startPeer, 3000);
+    } else if (["network", "server-error", "socket-error", "socket-closed"].includes(err.type)) {
+      setNet("bad", "Offline — retrying…");
+      setTimeout(startPeer, 4000);
+    } else if (err.type === "browser-incompatible") {
+      setNet("bad", "Browser lacks WebRTC");
+    }
+  });
+}
+
+function setupConn(conn){
+  conn._lastSeen = now();
+  conn.on("data", d => { conn._lastSeen = now(); try { handleMsg(conn, d); } catch(e){ console.error(e); } });
+  conn.on("close", () => { if (conn._pid && conns[conn._pid] === conn) { delete conns[conn._pid]; renderAll(); } });
+  conn.on("error", e => console.warn("conn error", e));
+}
+function send(conn, msg){ try { if (conn && conn.open) conn.send(msg); } catch(e){ console.warn(e); } }
+
+function cleanName(s, max){ return String(s || "").replace(/[\u0000-\u001f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, max); }
+
+function handleMsg(conn, d){
+  if (!d || typeof d !== "object") return;
+  if (d.type === "join") {
+    const name = cleanName(d.name, 18), team = cleanName(d.team, 18), cid = String(d.cid || "").slice(0, 40);
+    if (!name) return send(conn, { type: "error", code: "bad-name", msg: "Please enter a name." });
+    let pid = Object.keys(S.players).find(k => S.players[k].cid === cid);
+    const sameName = Object.keys(S.players).find(k => S.players[k].name.toLowerCase() === name.toLowerCase());
+    if (sameName && sameName !== pid) {
+      // Same name from a different device/browser: allow takeover only if the old one is gone.
+      if (isOnline(sameName) && conns[sameName] !== conn) return send(conn, { type: "error", code: "name-taken", msg: "\"" + name + "\" is already playing. Pick a different name!" });
+      if (pid && pid !== sameName) { delete S.players[pid]; if (conns[pid]) delete conns[pid]; }
+      pid = sameName;
+    }
+    if (!pid) {
+      pid = "p" + (S.nextPid++);
+      S.players[pid] = { name, team, cid, joinedAt: now() };
+      if (S.phase !== "lobby") toast("🥨 " + name + " joined!");
+    } else {
+      Object.assign(S.players[pid], { name, team, cid });
+    }
+    const old = conns[pid];
+    if (old && old !== conn) { send(old, { type: "replaced" }); setTimeout(() => { try { old.close(); } catch(e){} }, 300); }
+    conns[pid] = conn; conn._pid = pid;
+    send(conn, { type: "joined", name, team });
+    if (S.phase === "lobby") broadcast(); else sendState(pid);   // lobby: everyone sees the new player count
+    save(); renderAll();
+  } else if (d.type === "answer") {
+    const pid = conn._pid; if (!pid || !S.players[pid]) return;
+    if (S.phase !== "question" || d.qi !== S.qi) return sendState(pid);
+    const c = d.c | 0; if (c < 0 || c > 3) return;
+    if (S.qEndsAt && now() > S.qEndsAt + 750) return sendState(pid);
+    S.answers[S.qi] = S.answers[S.qi] || {};
+    if (!S.answers[S.qi][pid]) S.answers[S.qi][pid] = { c, ms: now() - S.qStartAt };
+    sendState(pid); save(); renderAnswered();
+  } else if (d.type === "ping") {
+    send(conn, { type: "pong" });
+  } else if (d.type === "leave") {
+    const pid = conn._pid; if (pid && conns[pid] === conn) delete conns[pid]; renderAll();
+  }
+}
+
+function stateFor(pid){
+  const rk = ranking(), me = rk.find(r => r.pid === pid) || {};
+  const q = S.game[S.qi];
+  const a = q && (S.answers[S.qi] || {})[pid];
+  const st = {
+    type: "state", phase: S.phase, title: TITLE, code: S.code, qi: S.qi, total: S.game.length,
+    players: rk.length,
+    me: { name: me.name, team: me.team, score: me.score || 0, rank: me.rank || 0, delta: me.delta || 0 },
+    answer: a ? a.c : null
+  };
+  if ((S.phase === "question" || S.phase === "reveal") && q) {
+    st.q = { text: q.q, choices: q.choices };
+    if (S.phase === "question" && S.qEndsAt) { st.remainingMs = Math.max(0, S.qEndsAt - now()); st.timerMs = S.settings.timer * 1000; }
+  }
+  if (S.phase === "reveal" && q) { st.correct = q.answer; st.gotBonus = !!(S.bonusOn[S.qi] && fastestCorrect(S.qi) === pid); }
+  if (S.phase === "board" || S.phase === "final") {
+    st.top = rk.slice(0, 5).map(r => ({ name: r.name, score: r.score, rank: r.rank }));
+    const tt = teamTotals(rk); if (tt.length) { st.teams = tt.slice(0, 5); st.myTeamRank = me.team ? tt.findIndex(t => t.name.toLowerCase() === me.team.toLowerCase()) + 1 : 0; }
+  }
+  return st;
+}
+function sendState(pid){ if (conns[pid]) send(conns[pid], stateFor(pid)); }
+function broadcast(){ for (const pid of Object.keys(conns)) sendState(pid); }
+
+// Heartbeat so phones notice a dead link, and we notice dead phones.
+setInterval(() => { for (const c of Object.values(conns)) send(c, { type: "ping" }); renderPlayersOnly(); }, 5000);
+
+/* ---------------- game flow ---------------- */
+function buildGame(){
+  let pool = ALL_Q.slice();
+  if (S.settings.kidsOnly) pool = pool.filter(q => q.kid);
+  if (S.settings.shuffle) for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  pool = pool.slice(0, Math.max(1, Math.min(S.settings.count || pool.length, pool.length)));
+  return pool.map(q => ({ q: q.q, choices: q.choices.slice(), answer: q.answer | 0, fact: q.fact || "" }));
+}
+function start(){
+  if (S.phase !== "lobby") return;
+  S.game = buildGame();
+  if (!S.game.length) return toast("No questions found in questions.js!");
+  S.answers = {}; S.revealed = {}; S.bonusOn = {};
+  S.qi = 0; goQuestion();
+}
+function goQuestion(){
+  S.phase = "question"; S.qStartAt = now();
+  S.qEndsAt = S.settings.timer > 0 ? S.qStartAt + S.settings.timer * 1000 : 0;
+  save(); renderAll(); broadcast();
+}
+function reveal(){
+  if (S.phase !== "question") return;
+  S.phase = "reveal"; S.revealed[S.qi] = true; S.bonusOn[S.qi] = !!S.settings.speedBonus;
+  save(); renderAll(); broadcast();
+}
+function showBoard(){
+  if (S.phase === "question") reveal();
+  if (S.phase !== "reveal") return;
+  S.phase = "board"; save(); renderAll(); broadcast();
+}
+function next(){
+  if (S.phase === "lobby") return start();
+  if (S.phase === "question") return reveal();
+  if (S.phase === "reveal" || S.phase === "board") {
+    if (S.qi + 1 < S.game.length) { S.qi++; goQuestion(); } else finish();
+  }
+}
+function finish(){
+  if (S.phase === "question") { S.revealed[S.qi] = true; S.bonusOn[S.qi] = !!S.settings.speedBonus; }
+  S.phase = "final"; save(); renderAll(); broadcast(); confetti();
+}
+function advance(){ // Space / Enter: lobby → question → reveal → scoreboard → next question …
+  if (S.phase === "lobby") start();
+  else if (S.phase === "question") reveal();
+  else if (S.phase === "reveal") showBoard();
+  else if (S.phase === "board") next();
+}
+function endGame(){
+  if (S.phase === "lobby" || S.phase === "final") return;
+  modal("End the game now?", "Skip the remaining questions and show the final leaderboard.", [["Cancel"], ["End game", finish, true]]);
+}
+function newGame(){
+  modal("Start a new game?", "Scores reset. Everyone stays connected in the same room.", [["Cancel"], ["New game", () => {
+    S = freshState(S.code, true); save(); renderAll(); broadcast(); stopConfetti();
+  }, true]]);
+}
+
+/* timer tick */
+function tick(){
+  if (S.phase !== "question") { $("timer").style.visibility = "hidden"; return; }
+  if (!S.qEndsAt) { $("timer").style.visibility = "hidden"; return; }
+  $("timer").style.visibility = "visible";
+  const left = Math.max(0, S.qEndsAt - now()), total = S.settings.timer * 1000 || 1;
+  $("timerNum").textContent = Math.ceil(left / 1000);
+  $("timerFg").style.strokeDashoffset = (276.46 * (1 - left / total)).toFixed(1);
+  $("timer").classList.toggle("low", left < 5000);
+  if (left <= 0) reveal();
+}
+tickTimer = setInterval(tick, 200);
+
+/* ---------------- rendering ---------------- */
+function show(id){ for (const s of document.querySelectorAll(".screen")) s.classList.toggle("on", s.id === id); }
+
+function joinUrl(){
+  const params = new URLSearchParams(location.search);
+  const base = params.get("base") || location.href;
+  const u = new URL("play.html", base);
+  u.search = "?room=" + S.code;
+  return u.href;
+}
+function renderJoin(){
+  const url = joinUrl();
+  $("joinUrl").textContent = url.replace(/^https?:\/\//, "");
+  $("codeBig").textContent = S.code; $("roomCode").textContent = S.code;
+  try {
+    const qr = qrcode(0, "M"); qr.addData(url); qr.make();
+    $("qr").innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+  } catch(e) { $("qr").innerHTML = '<span style="color:#c00;padding:1em">QR library failed to load — use the link below.</span>'; }
+  const w = [];
+  if (location.protocol === "file:") w.push("⚠️ Opened as a local file — phones can't load this. Serve it over http(s) (see README).");
+  else if (/^(localhost|127\.|\[::1\])/.test(location.hostname) && !new URLSearchParams(location.search).get("base"))
+    w.push("⚠️ This is a localhost address, so phones can't reach it. Open the TV page via your laptop's Wi-Fi IP (e.g. http://192.168.1.23:8000/) or a hosted URL.");
+  $("hostWarn").style.display = w.length ? "block" : "none"; $("hostWarn").innerHTML = w.join("<br>");
+}
+function renderPlayersOnly(){
+  const pids = Object.keys(S.players);
+  $("playerCount").textContent = onlinePids().length + (pids.length !== onlinePids().length ? " / " + pids.length : "");
+  if (S.phase === "lobby") {
+    const box = $("lobbyPlayers");
+    if (!pids.length) { box.innerHTML = '<div class="empty">Waiting for players… 🍻</div>'; return; }
+    box.innerHTML = pids.map(pid => { const p = S.players[pid];
+      return '<div class="chip' + (isOnline(pid) ? "" : " off") + '" data-pid="' + pid + '" title="Click to remove">' + esc(p.name) + (p.team ? "<small>" + esc(p.team) + "</small>" : "") + "</div>"; }).join("");
+  }
+  if (S.phase === "question") renderAnswered();
+}
+function renderAnswered(){
+  const ans = S.answers[S.qi] || {};
+  const n = Object.keys(ans).length, on = new Set(onlinePids()); Object.keys(ans).forEach(p => on.add(p));
+  const total = on.size;
+  $("answered").textContent = n + " / " + total + " answered" + (total && n >= total ? " ✅" : "");
+}
+function renderQuestion(){
+  const q = S.game[S.qi]; if (!q) return;
+  const revealed = S.phase === "reveal";
+  $("qNum").textContent = "Question " + (S.qi + 1) + " of " + S.game.length;
+  $("qText").textContent = q.q;
+  const ans = S.answers[S.qi] || {}, counts = [0, 0, 0, 0];
+  Object.values(ans).forEach(a => counts[a.c]++);
+  const tot = Object.keys(ans).length || 1;
+  $("choices").innerHTML = q.choices.map((c, i) =>
+    '<div class="choice c' + i + (revealed ? (i === q.answer ? " right" : " wrong") : "") + '">' +
+    '<div class="letter"><span>' + "ABCD"[i] + "</span></div><div class=\"txt\">" + esc(c) + "</div>" +
+    '<div class="cnt">' + counts[i] + "</div><div class=\"bar\" style=\"width:" + (revealed ? (100 * counts[i] / tot) : 0) + '%"></div></div>').join("");
+  $("question").classList.toggle("revealed", revealed);
+  if (revealed) {
+    $("factText").textContent = q.fact || "The answer is " + "ABCD"[q.answer] + ": " + q.choices[q.answer];
+    const right = Object.entries(ans).filter(([, a]) => a.c === q.answer).length;
+    const fast = S.bonusOn[S.qi] ? fastestCorrect(S.qi) : null;
+    $("stats").innerHTML = "<div>✅ " + right + " of " + Object.keys(ans).length + " got it</div>" +
+      (fast && S.players[fast] ? '<div class="bonus">⚡ Fastest: ' + esc(S.players[fast].name) + " (+" + SPEED_BONUS + ")</div>" : "");
+  }
+  renderAnswered(); tick();
+}
+function rowHtml(r, i, withDelta){
+  return '<div class="row' + (r.rank <= 3 && r.score > 0 ? " g" + r.rank : "") + (r.online ? "" : " off") + '" style="animation-delay:' + (i * 40) + 'ms">' +
+    '<span class="rk">#' + r.rank + '</span><span class="nm">' + esc(r.name) + (r.team ? '<span class="tm">' + esc(r.team) + "</span>" : "") + "</span>" +
+    (withDelta ? '<span class="dl">' + (r.delta ? "+" + fmt(r.delta) : "") + "</span>" : "") +
+    '<span class="pts">' + fmt(r.score) + "</span></div>";
+}
+function teamsHtml(tt){
+  return "<h3>🛡 Team totals</h3>" + tt.slice(0, 10).map((t, i) => '<div class="trow"><span class="tn">' + (i + 1) + ". " + esc(t.name) +
+    "<small>" + t.members + (t.members === 1 ? " player" : " players") + '</small></span><span class="tp">' + fmt(t.score) + "</span></div>").join("");
+}
+function renderBoard(){
+  const rk = ranking(), tt = teamTotals(rk);
+  $("boardSub").textContent = "after question " + (S.qi + 1) + " of " + S.game.length;
+  const shown = rk.slice(0, 16);   // 2 columns x 8 rows; everyone sees their own rank on their phone
+  const rowsPerCol = Math.min(8, Math.max(4, Math.ceil(shown.length / 2)));
+  $("boardRows").style.gridTemplateRows = "repeat(" + rowsPerCol + ", auto)";
+  $("boardRows").innerHTML = shown.length ? shown.map((r, i) => rowHtml(r, i, true)).join("") : '<div class="empty">No players yet.</div>';
+  $("boardTeams").classList.toggle("on", tt.length > 0);
+  $("boardTeams").innerHTML = tt.length ? teamsHtml(tt) : "";
+}
+function renderFinal(){
+  const rk = ranking(), tt = teamTotals(rk);
+  $("finalSub").textContent = Math.min(S.qi + 1, S.game.length) + " questions · " + rk.length + " players";
+  const medals = ["🥇", "🥈", "🥉"], order = [1, 0, 2];
+  $("podium").innerHTML = order.filter(i => rk[i]).map(i => '<div class="pod p' + (i + 1) + '"><div class="medal">' + medals[rk[i].rank - 1] + '</div><div class="pn">' + esc(rk[i].name) +
+    '</div><div class="pp">' + fmt(rk[i].score) + ' pts</div><div class="block"></div></div>').join("");
+  $("finalRows").innerHTML = rk.slice(3, 12).map((r, i) => rowHtml(r, i, false)).join("");
+  $("finalTeams").classList.toggle("on", tt.length > 0);
+  const tie = tt.length > 1 && tt[1].score === tt[0].score;
+  $("finalTeams").innerHTML = tt.length ? teamsHtml(tt).replace("Team totals", tie ? "Teams — it's a tie!" : "Winning team: " + esc(tt[0].name)) : "";
+}
+function renderControls(){
+  const p = S.phase;
+  $("bStart").disabled = p !== "lobby";
+  $("bReveal").disabled = p !== "question";
+  $("bBoard").disabled = !(p === "question" || p === "reveal");
+  $("bNext").disabled = p === "final" || p === "lobby";
+  $("bNext").innerHTML = (p === "question" ? "👀 Reveal" : (S.qi + 1 >= S.game.length && p !== "lobby") ? "🏁 Final results" : "⏭ Next question") + "<kbd>N</kbd>";
+  $("bEnd").disabled = p === "lobby" || p === "final";
+  for (const el of document.querySelectorAll(".settings select, .settings input")) el.disabled = p !== "lobby";
+}
+function renderAll(){
+  document.title = TITLE + " — TV";
+  $("title").textContent = "🥨 " + TITLE + " 🍺";
+  renderJoin(); renderControls();
+  if (S.phase === "lobby") show("lobby");
+  else if (S.phase === "question" || S.phase === "reveal") { show("question"); renderQuestion(); }
+  else if (S.phase === "board") { show("board"); renderBoard(); }
+  else if (S.phase === "final") { show("final"); renderFinal(); }
+  renderPlayersOnly();
+}
+
+/* ---------------- settings ---------------- */
+function initSettings(){
+  const sc = $("setCount");
+  const opts = [5, 10, 15, 20, 25, 30].filter(n => n < ALL_Q.length).concat([ALL_Q.length]);
+  sc.innerHTML = opts.map(n => '<option value="' + n + '">' + (n === ALL_Q.length ? "All " + n : n) + "</option>").join("");
+  const st = S.settings;
+  $("setTimer").value = String(st.timer); $("setBonus").checked = !!st.speedBonus; $("setShuffle").checked = !!st.shuffle; $("setKids").checked = !!st.kidsOnly;
+  sc.value = String(opts.includes(st.count) ? st.count : ALL_Q.length);
+  const upd = () => {
+    S.settings = { timer: +$("setTimer").value, speedBonus: $("setBonus").checked, shuffle: $("setShuffle").checked, count: +sc.value, kidsOnly: $("setKids").checked };
+    save();
+  };
+  ["setTimer", "setBonus", "setShuffle", "setCount", "setKids"].forEach(id => $(id).addEventListener("change", upd));
+  $("setKids").addEventListener("change", () => { const k = ALL_Q.filter(q => q.kid).length; if ($("setKids").checked) toast("🧒 " + k + " kid-friendly questions"); });
+}
+
+/* ---------------- UI helpers ---------------- */
+let toastT = null;
+function toast(msg){ const t = $("toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 2500); }
+function modal(title, body, buttons){
+  $("mTitle").textContent = title; $("mBody").innerHTML = body; $("mBtns").innerHTML = "";
+  buttons.forEach(([label, fn, primary]) => { const b = document.createElement("button"); b.className = "btn" + (primary ? " primary" : ""); b.textContent = label;
+    b.onclick = () => { $("modal").classList.remove("on"); fn && fn(); }; $("mBtns").appendChild(b); });
+  $("modal").classList.add("on");
+  const last = $("mBtns").lastChild; last && last.focus();
+}
+const modalOpen = () => $("modal").classList.contains("on");
+function fullscreen(){ if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); }
+
+$("bStart").onclick = start; $("bReveal").onclick = reveal; $("bBoard").onclick = showBoard; $("bNext").onclick = next;
+$("bEnd").onclick = endGame; $("bFull").onclick = fullscreen; $("bNew").onclick = newGame;
+for (const b of document.querySelectorAll(".controls .btn")) b.addEventListener("mouseup", () => b.blur());
+$("lobbyPlayers").addEventListener("click", e => {
+  const chip = e.target.closest(".chip"); if (!chip || S.phase !== "lobby") return;
+  const pid = chip.dataset.pid, p = S.players[pid]; if (!p) return;
+  modal("Remove " + p.name + "?", "They'll be disconnected and can re-join with a different name.", [["Cancel"], ["Remove", () => {
+    send(conns[pid], { type: "kicked" }); const c = conns[pid]; delete conns[pid]; delete S.players[pid];
+    setTimeout(() => { try { c && c.close(); } catch(e){} }, 300); save(); renderAll();
+  }, true]]);
+});
+document.addEventListener("keydown", e => {
+  if (e.target.matches("input, select, textarea") || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (modalOpen()) { if (e.key === "Escape") $("modal").classList.remove("on"); return; }
+  const k = e.key.toLowerCase();
+  if (k === " " || k === "enter") { e.preventDefault(); advance(); }
+  else if (k === "s") start();
+  else if (k === "r") reveal();
+  else if (k === "n" || k === "arrowright") next();
+  else if (k === "b") showBoard();
+  else if (k === "e") endGame();
+  else if (k === "f") fullscreen();
+  else if (k === "h") $("controls").classList.toggle("hidden");
+});
+
+/* ---------------- confetti (final screen) ---------------- */
+let confRaf = null;
+function confetti(){
+  const cv = $("confetti"), ctx = cv.getContext("2d"); cv.width = innerWidth; cv.height = innerHeight;
+  const cols = ["#1f74c4", "#ffffff", "#f2b632", "#5fb4ea"];
+  const ps = Array.from({ length: 160 }, () => ({ x: Math.random() * cv.width, y: -Math.random() * cv.height, w: 8 + Math.random() * 8, h: 10 + Math.random() * 10,
+    vy: 2 + Math.random() * 3, vx: -1 + Math.random() * 2, r: Math.random() * 6, vr: -.1 + Math.random() * .2, c: cols[Math.floor(Math.random() * cols.length)] }));
+  const t0 = now();
+  stopConfetti();
+  (function frame(){
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ps.forEach(p => { p.y += p.vy; p.x += p.vx; p.r += p.vr; if (p.y > cv.height && now() - t0 < 6000) p.y = -20;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore(); });
+    if (now() - t0 < 11000) confRaf = requestAnimationFrame(frame); else ctx.clearRect(0, 0, cv.width, cv.height);
+  })();
+}
+function stopConfetti(){ if (confRaf) cancelAnimationFrame(confRaf); confRaf = null; const cv = $("confetti"); cv.getContext("2d").clearRect(0, 0, cv.width, cv.height); }
+
+/* ---------------- boot ---------------- */
+function boot(){
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null"); } catch(e){}
+  const fresh = new URLSearchParams(location.search).has("new");
+  const usable = saved && saved.v === 1 && !fresh && now() - saved.updatedAt < 18 * 3600 * 1000 && (saved.phase !== "lobby" || Object.keys(saved.players || {}).length);
+  const go = () => { initSettings(); renderAll(); startPeer(); if (S.phase === "final") renderFinal(); };
+  if (usable) {
+    S = saved;
+    modal("Resume the previous game?", "Room <b>" + esc(saved.code) + "</b> · " + Object.keys(saved.players).length + " players · " +
+      (saved.phase === "lobby" ? "in the lobby" : saved.phase === "final" ? "finished" : "question " + (saved.qi + 1) + " of " + saved.game.length) +
+      "<br><small>Phones reconnect automatically and keep their scores.</small>",
+      [["Start fresh", () => { S = freshState(); save(); go(); }], ["Resume", () => {
+        if (S.phase === "question" && S.qEndsAt && S.qEndsAt < now()) S.qEndsAt = now() + 5000; // short grace period after a refresh
+        go();
+      }, true]]);
+    renderAll();
+  } else { S = freshState(); save(); go(); }
+}
+window.__trivia = { get S(){ return S; }, ranking, start, reveal, next, showBoard, advance, conns };
+boot();
+})();
+</script>
+</body>
+</html>
