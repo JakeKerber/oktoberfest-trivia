@@ -75,12 +75,6 @@ window.TRIVIA_QUESTIONS = [
     fact: "It's Bavarian dialect for \"Es ist angezapft\" — \"It is tapped!\""
   },
   {
-    q: "Oktoberfest was cancelled in 2020 and 2021. Why?",
-    choices: ["A beer shortage", "Construction on the grounds", "The COVID-19 pandemic", "Bad weather"],
-    answer: 2, level: "easy",
-    fact: "It returned in 2022 after the two-year break."
-  },
-  {
     q: "Roughly how many visitors come to Munich's Oktoberfest each year?",
     choices: ["About 60,000", "About 600,000", "About 6 million", "About 60 million"],
     answer: 2, level: "medium",
@@ -228,6 +222,13 @@ window.TRIVIA_QUESTIONS = [
     choices: ["Vienna", "Frankfurt", "Prague", "Munich"],
     answer: 3, level: "easy",
     fact: "It was founded in 1589 as a royal brewery for the Duke of Bavaria."
+  },
+
+  {
+    q: "Golden lions appear on the Bavarian coat of arms. Which animal is on Germany's national coat of arms?",
+    choices: ["A lion", "A bear", "An eagle", "A horse"],
+    answer: 2, level: "easy", kid: true,
+    fact: "Germany's coat of arms shows a black eagle on a gold background, while Bavaria's state arms are held up by two golden lions."
   },
 
   // ---------- German culture & language ----------
