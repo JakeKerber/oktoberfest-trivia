@@ -18,6 +18,11 @@
 
 window.GAME_TITLE = "OktKerberfest Trivia";
 
+// Default seconds per question (0 = no timer). When it hits zero the answer is
+// revealed automatically; the host can still press Space to reveal early.
+// The TV lobby's Timer dropdown can override this for a game.
+window.TIMER_SECONDS = 30;
+
 window.TRIVIA_QUESTIONS = [
   // ---------- Oktoberfest history ----------
   {

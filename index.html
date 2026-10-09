@@ -174,8 +174,8 @@ main{flex:1;position:relative;min-height:0}
       <div class="settings">
         <label>⏱ Timer
           <select id="setTimer">
-            <option value="0">Off</option><option value="15">15 s</option><option value="20" selected>20 s</option>
-            <option value="30">30 s</option><option value="45">45 s</option>
+            <option value="0">Off</option><option value="15">15 s</option><option value="20">20 s</option>
+            <option value="30" selected>30 s</option><option value="45">45 s</option><option value="60">60 s</option>
           </select></label>
         <label><input type="checkbox" id="setBonus" checked> ⚡ Speed bonus (+0.5 to fastest correct)</label>
         <label><input type="checkbox" id="setShuffle"> 🔀 Shuffle questions</label>
@@ -253,6 +253,7 @@ const PEER_PREFIX = "kerber-okt-trivia-";          // peer id = prefix + room co
 const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 const STORE_KEY = "okt-trivia-host-v1";
 const SPEED_BONUS = 0.5;
+const DEFAULT_TIMER = Number.isFinite(+window.TIMER_SECONDS) ? Math.max(0, +window.TIMER_SECONDS | 0) : 30;
 const ALL_Q = (window.TRIVIA_QUESTIONS || []).filter(q => q && q.q && Array.isArray(q.choices) && q.choices.length === 4);
 const TITLE = window.GAME_TITLE || "OktKerberfest Trivia";
 
@@ -272,7 +273,7 @@ function freshState(code, keepPlayers){
     v: 1, code: code || newCode(), phase: "lobby", qi: -1, game: [],
     qStartAt: 0, qEndsAt: 0, answers: {}, revealed: {}, bonusOn: {},
     players: {}, nextPid: 1, updatedAt: now(),
-    settings: { timer: 20, speedBonus: true, shuffle: false, count: ALL_Q.length, kidsOnly: false }
+    settings: { timer: DEFAULT_TIMER, speedBonus: true, shuffle: false, count: ALL_Q.length, kidsOnly: false }
   };
   if (keepPlayers && S) {
     st.settings = S.settings; st.nextPid = S.nextPid;
@@ -621,7 +622,9 @@ function initSettings(){
   const opts = [5, 10, 15, 20, 25, 30].filter(n => n < ALL_Q.length).concat([ALL_Q.length]);
   sc.innerHTML = opts.map(n => '<option value="' + n + '">' + (n === ALL_Q.length ? "All " + n : n) + "</option>").join("");
   const st = S.settings;
-  $("setTimer").value = String(st.timer); $("setBonus").checked = !!st.speedBonus; $("setShuffle").checked = !!st.shuffle; $("setKids").checked = !!st.kidsOnly;
+  const tsel = $("setTimer");
+  for (const v of [DEFAULT_TIMER, st.timer]) if (!tsel.querySelector('option[value="' + v + '"]')) { const o = document.createElement("option"); o.value = String(v); o.textContent = v + " s"; tsel.appendChild(o); }
+  tsel.value = String(st.timer); $("setBonus").checked = !!st.speedBonus; $("setShuffle").checked = !!st.shuffle; $("setKids").checked = !!st.kidsOnly;
   sc.value = String(opts.includes(st.count) ? st.count : ALL_Q.length);
   const upd = () => {
     S.settings = { timer: +$("setTimer").value, speedBonus: $("setBonus").checked, shuffle: $("setShuffle").checked, count: +sc.value, kidsOnly: $("setKids").checked };

@@ -47,6 +47,8 @@ input:focus{outline:none;border-color:var(--blue)}
 .qmeta{display:flex;justify-content:space-between;font-weight:900;font-size:16px;color:var(--sky);margin-bottom:6px}
 .tbar{height:8px;border-radius:99px;background:rgba(255,255,255,.15);overflow:hidden;margin-bottom:10px}
 .tbar div{height:100%;background:var(--gold);width:100%;transition:width .25s linear}
+.tsec{text-align:right;font-weight:900;color:var(--gold);font-size:15px;margin:-4px 0 8px}
+.tsec.low{color:#ff6b6b}
 .qtext{font-size:20px;font-weight:900;line-height:1.25;padding:14px 16px;margin-bottom:12px}
 .answers{flex:1;display:grid;grid-template-rows:repeat(4,1fr);gap:10px;min-height:300px}
 .ans{display:flex;align-items:center;gap:12px;border:none;border-radius:16px;padding:10px 14px;font:inherit;font-size:20px;font-weight:900;color:#fff;text-align:left;box-shadow:0 5px 0 rgba(0,0,0,.3);cursor:pointer;transition:opacity .2s,transform .1s}
@@ -108,7 +110,7 @@ input:focus{outline:none;border-color:var(--blue)}
   <!-- QUESTION / REVEAL -->
   <section class="view" id="vQ">
     <div class="qmeta"><span id="qNum">Q1</span><span id="qInfo"></span></div>
-    <div class="tbar" id="tbar"><div id="tfill"></div></div>
+    <div class="tbar" id="tbar"><div id="tfill"></div></div><div class="tsec" id="tsec"></div>
     <div id="banner" class="banner wait" style="display:none"></div>
     <div class="card qtext" id="qText"></div>
     <div class="answers" id="answers"></div>
@@ -272,9 +274,9 @@ function render(){
     if (s.phase === "question" && s.timerMs) {
       tb.style.visibility = "visible";
       const end = Date.now() + s.remainingMs;
-      const upd = () => { const left = Math.max(0, end - Date.now()); $("tfill").style.width = (100 * left / s.timerMs) + "%"; };
+      const upd = () => { const left = Math.max(0, end - Date.now()); $("tfill").style.width = (100 * left / s.timerMs) + "%"; const sec = Math.ceil(left / 1000); const ts = $("tsec"); ts.style.display = ""; ts.textContent = "⏱ " + sec + "s"; ts.className = "tsec" + (sec <= 5 ? " low" : ""); };
       upd(); tTimer = setInterval(upd, 250);
-    } else tb.style.visibility = "hidden";
+    } else { tb.style.visibility = "hidden"; $("tsec").style.display = "none"; }
     return;
   }
   if (s.phase === "board" || s.phase === "final") {
