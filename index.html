@@ -644,7 +644,10 @@ function renderControls(){
   $("bReveal").disabled = p !== "question";
   $("bBoard").disabled = !(p === "question" || p === "reveal");
   $("bNext").disabled = p === "final" || p === "lobby";
-  $("bNext").innerHTML = (p === "question" ? "👀 Reveal" : (S.qi + 1 >= S.game.length && p !== "lobby") ? "🏁 Final results" : "⏭ Next question") + "<kbd>N</kbd>";
+  // One reveal control: while a question is up show only 👀 Reveal; afterwards show only Next (N still reveals via keyboard).
+  $("bReveal").style.display = p === "question" ? "" : "none";
+  $("bNext").style.display = p === "question" ? "none" : "";
+  $("bNext").innerHTML = ((S.qi + 1 >= S.game.length && p !== "lobby") ? "🏁 Final results" : "⏭ Next question") + "<kbd>N</kbd>";
   $("bEnd").disabled = p === "lobby" || p === "final";
   for (const el of document.querySelectorAll(".settings select, .settings input")) el.disabled = p !== "lobby";
 }
