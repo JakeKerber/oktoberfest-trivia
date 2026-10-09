@@ -175,7 +175,7 @@ main{flex:1;position:relative;min-height:0}
     </div>
     <div class="lobbyRight">
       <h1 id="lobbyTitle">Willkommen zur OktKerberfest Trivia!</h1>
-      <div class="sub" id="lobbySub">Grab a pretzel, scan the code, and pick a name. Teams optional!</div>
+      <div class="sub" id="lobbySub">Grab a pretzel, scan the code, and pick a team name!</div>
       <div class="players" id="lobbyPlayers"></div>
       <div class="settings">
         <label>⏱ Timer
@@ -379,13 +379,13 @@ function cleanName(s, max){ return String(s || "").replace(/[\u0000-\u001f<>]/g,
 function handleMsg(conn, d){
   if (!d || typeof d !== "object") return;
   if (d.type === "join") {
-    const name = cleanName(d.name, 18), team = cleanName(d.team, 18), cid = String(d.cid || "").slice(0, 40);
-    if (!name) return send(conn, { type: "error", code: "bad-name", msg: "Please enter a name." });
+    const name = cleanName(d.name || d.team, 18), team = "", cid = String(d.cid || "").slice(0, 40);
+    if (!name) return send(conn, { type: "error", code: "bad-name", msg: "Please enter a team name." });
     let pid = Object.keys(S.players).find(k => S.players[k].cid === cid);
     const sameName = Object.keys(S.players).find(k => S.players[k].name.toLowerCase() === name.toLowerCase());
     if (sameName && sameName !== pid) {
       // Same name from a different device/browser: allow takeover only if the old one is gone.
-      if (isOnline(sameName) && conns[sameName] !== conn) return send(conn, { type: "error", code: "name-taken", msg: "\"" + name + "\" is already playing. Pick a different name!" });
+      if (isOnline(sameName) && conns[sameName] !== conn) return send(conn, { type: "error", code: "name-taken", msg: "\"" + name + "\" is already playing. Pick a different team name!" });
       if (pid && pid !== sameName) { delete S.players[pid]; if (conns[pid]) delete conns[pid]; }
       pid = sameName;
     }
@@ -704,7 +704,7 @@ for (const b of document.querySelectorAll(".controls .btn")) b.addEventListener(
 $("lobbyPlayers").addEventListener("click", e => {
   const chip = e.target.closest(".chip"); if (!chip || S.phase !== "lobby") return;
   const pid = chip.dataset.pid, p = S.players[pid]; if (!p) return;
-  modal("Remove " + p.name + "?", "They'll be disconnected and can re-join with a different name.", [["Cancel"], ["Remove", () => {
+  modal("Remove " + p.name + "?", "They'll be disconnected and can re-join with a different team name.", [["Cancel"], ["Remove", () => {
     send(conns[pid], { type: "kicked" }); const c = conns[pid]; delete conns[pid]; delete S.players[pid];
     setTimeout(() => { try { c && c.close(); } catch(e){} }, 300); save(); renderAll();
   }, true]]);

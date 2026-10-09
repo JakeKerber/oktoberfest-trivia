@@ -85,10 +85,8 @@ input:focus{outline:none;border-color:var(--blue)}
     <form class="card" id="joinForm" autocomplete="off">
       <div id="roomRow"><label for="room">Room code <small>(shown on the TV)</small></label>
         <input id="room" maxlength="4" autocapitalize="characters" placeholder="ABCD" style="text-transform:uppercase;letter-spacing:.2em"></div>
-      <label for="name">Your name</label>
-      <input id="name" maxlength="18" placeholder="e.g. Oma Helga" autocapitalize="words" enterkeyhint="go">
-      <label for="team">Team name <small>(optional)</small></label>
-      <input id="team" maxlength="18" placeholder="e.g. The Pretzel Pals" autocapitalize="words">
+      <label for="name">Team name <small>(or just your name)</small></label>
+      <input id="name" maxlength="18" placeholder="e.g. The Pretzel Pals" autocapitalize="words" enterkeyhint="go">
       <button class="btn" type="submit" id="joinBtn">Join 🍻</button>
       <div class="err" id="joinErr"></div>
     </form>
@@ -97,7 +95,7 @@ input:focus{outline:none;border-color:var(--blue)}
   <!-- CONNECTING -->
   <section class="view center" id="vConn">
     <div class="spin"></div><div class="p" id="connMsg">Connecting to the TV…</div>
-    <button class="link" id="connCancel">Change name / room</button>
+    <button class="link" id="connCancel">Change team / room</button>
   </section>
 
   <!-- LOBBY / WAITING -->
@@ -105,7 +103,7 @@ input:focus{outline:none;border-color:var(--blue)}
     <div class="big">🍻</div>
     <div class="h" id="waitTitle">You're in!</div>
     <div class="p" id="waitMsg">Watch the TV — the game starts soon.</div>
-    <button class="link" id="changeName">Change name or team</button>
+    <button class="link" id="changeName">Change team name</button>
   </section>
 
   <!-- QUESTION / REVEAL -->
@@ -222,7 +220,7 @@ function onMsg(d){
     showJoin(d.msg || "Couldn't join.");
   } else if (d.type === "kicked") {
     wantConnected = false; joined = false; try { localStorage.removeItem(storeKey()); } catch(e){}
-    me = { cid: randId(), name: "", team: "" }; showJoin("The host removed you. You can join again with a different name.");
+    me = { cid: randId(), name: "", team: "" }; showJoin("The host removed you. You can join again with a different team name.");
   } else if (d.type === "replaced") {
     wantConnected = false; status("");
     view("vConn"); $("connMsg").textContent = "You joined from another tab or device. Reload to play here.";
@@ -318,7 +316,7 @@ $("answers").addEventListener("click", e => {
 function showJoin(err){
   view("vJoin"); status("");
   $("room").value = room;
-  $("name").value = (me && me.name) || ""; $("team").value = (me && me.team) || "";
+  $("name").value = (me && me.name) || "";
   $("joinErr").textContent = err || "";
   $("roomRow").style.display = params.get("room") && room ? "none" : "";
   setTimeout(() => (room ? $("name") : $("room")).focus(), 50);
@@ -326,9 +324,9 @@ function showJoin(err){
 $("joinForm").addEventListener("submit", e => {
   e.preventDefault();
   const r = $("room").value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4);
-  const name = $("name").value.trim().slice(0, 18), team = $("team").value.trim().slice(0, 18);
+  const name = $("name").value.trim().slice(0, 18), team = "";   // one field: the team name (can just be a person's name)
   if (r.length !== 4) { $("joinErr").textContent = "Enter the 4-character room code from the TV."; return; }
-  if (!name) { $("joinErr").textContent = "Please enter your name."; return; }
+  if (!name) { $("joinErr").textContent = "Please enter a team name."; return; }
   if (r !== room) { room = r; const prev = loadMe(); me = prev || null; history.replaceState(null, "", "?room=" + room); }
   me = { cid: (me && me.cid) || randId(), name, team };
   saveMe(); startJoin();

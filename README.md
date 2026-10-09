@@ -30,7 +30,7 @@ The internet is only used to set up those connections. Game traffic goes phone â
 ## Running the game (host cheat sheet)
 
 1. Open the hosted URL (see Hosting below) on the laptop, connect the laptop to the TV, and press **F** for fullscreen.
-2. Guests scan the QR code (or go to the URL and type the room code), then enter a name and an optional team name.
+2. Guests scan the QR code (or go to the URL and type the room code), then enter a team name (it can just be their own name). Each team name is one entry on the scoreboard.
 3. In the lobby, choose: timer per question (off/15/20/30/45/60 s, default `TIMER_SECONDS` in `questions.js`),
    break between questions (off/5/10/15/20/30 s, default `GAP_SECONDS`), speed bonus, shuffle, number of questions, kid-friendly only.
    To remove a player (for example, a silly name), click their name chip.
@@ -124,4 +124,4 @@ test ran entirely over `http://<LAN IP>:8000` in Chromium (`isSecureContext === 
   players**, and 30â€“50 should be fine on any modern laptop. The TV scoreboard shows the top 16 players, and each phone always shows its own rank.
 - **Keep the TV page open in one tab only.** Two TV tabs would fight over the room code. Don't let the laptop sleep.
 - **Answers lock on first tap.** Late answers (after the timer) are ignored.
-- Names are limited to 18 characters. Two online players can't use the same name.
+- Names are limited to 18 characters. Two online phones can't use the same team name; if several people share a team, one phone plays for it.
