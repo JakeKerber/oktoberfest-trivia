@@ -23,6 +23,12 @@ window.GAME_TITLE = "OktKerberfest Trivia";
 // The TV lobby's Timer dropdown can override this for a game.
 window.TIMER_SECONDS = 30;
 
+// Break between questions, in seconds (0 = off: the host advances manually).
+// Starts when the answer is revealed; when it hits zero the game moves on to the
+// next question (or the final results after the last one). Space/N skips ahead.
+// The TV lobby's Break dropdown can override this for a game.
+window.GAP_SECONDS = 10;
+
 window.TRIVIA_QUESTIONS = [
   // ---------- Oktoberfest history ----------
   {

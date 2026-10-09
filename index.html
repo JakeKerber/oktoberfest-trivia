@@ -73,6 +73,12 @@ main{flex:1;position:relative;min-height:0}
 .timer .fg{stroke:var(--gold);stroke-linecap:round;transition:stroke-dashoffset .25s linear}
 .timer .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Alfa Slab One",serif;font-size:3.6vh}
 .timer.low .fg{stroke:#e5533d}
+.gap{display:none;flex-direction:column;align-items:flex-end;gap:.6vh;margin-left:auto;font-size:clamp(18px,1.8vw,36px);font-weight:900;white-space:nowrap}
+.gap.on{display:flex}
+.gap .gl b{font-family:"Alfa Slab One",serif;color:var(--gold);font-weight:400;font-size:1.35em;margin:0 .1em}
+.gap .gb{width:100%;min-width:16vw;height:1vh;border-radius:99px;background:rgba(255,255,255,.15);overflow:hidden}
+.gap .gb div{height:100%;background:var(--gold);transition:width .2s linear}
+.gap.low .gl b{color:#ff6b5b}.gap.low .gb div{background:#e5533d}
 .qtext{flex:0 0 auto;margin:2.5vh 0 3vh;padding:3vh 2.5vw;font-size:clamp(30px,3.7vw,78px);line-height:1.15;font-weight:900;text-align:center;display:flex;align-items:center;justify-content:center;min-height:24vh}
 .choices{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2vh 1.6vw;min-height:0}
 .choice{position:relative;display:flex;align-items:center;gap:1.4vw;border-radius:20px;padding:1vh 1.6vw;color:#fff;font-size:clamp(22px,2.7vw,58px);font-weight:900;box-shadow:0 8px 0 rgba(0,0,0,.25);transition:opacity .4s,transform .4s,filter .4s;overflow:hidden}
@@ -177,6 +183,11 @@ main{flex:1;position:relative;min-height:0}
             <option value="0">Off</option><option value="15">15 s</option><option value="20">20 s</option>
             <option value="30" selected>30 s</option><option value="45">45 s</option><option value="60">60 s</option>
           </select></label>
+        <label>☕ Break
+          <select id="setGap">
+            <option value="0">Off</option><option value="5">5 s</option><option value="10" selected>10 s</option>
+            <option value="15">15 s</option><option value="20">20 s</option><option value="30">30 s</option>
+          </select></label>
         <label><input type="checkbox" id="setBonus" checked> ⚡ Speed bonus (+0.5 to fastest correct)</label>
         <label><input type="checkbox" id="setShuffle"> 🔀 Shuffle questions</label>
         <label>❓ Questions <select id="setCount"></select></label>
@@ -237,6 +248,7 @@ main{flex:1;position:relative;min-height:0}
 
 <div class="modal" id="modal"><div class="card"><h2 id="mTitle"></h2><div id="mBody"></div><div class="btns" id="mBtns"></div></div></div>
 <div class="toast" id="toast"></div>
+<div class="gap" id="gap"><div class="gl" id="gapLabel"></div><div class="gb"><div id="gapFill"></div></div></div>
 <canvas id="confetti"></canvas>
 
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
@@ -254,6 +266,7 @@ const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 const STORE_KEY = "okt-trivia-host-v1";
 const SPEED_BONUS = 0.5;
 const DEFAULT_TIMER = Number.isFinite(+window.TIMER_SECONDS) ? Math.max(0, +window.TIMER_SECONDS | 0) : 30;
+const DEFAULT_GAP = Number.isFinite(+window.GAP_SECONDS) ? Math.max(0, +window.GAP_SECONDS | 0) : 10;
 const ALL_Q = (window.TRIVIA_QUESTIONS || []).filter(q => q && q.q && Array.isArray(q.choices) && q.choices.length === 4);
 const TITLE = window.GAME_TITLE || "OktKerberfest Trivia";
 
@@ -266,14 +279,14 @@ const newCode = () => Array.from({length: 4}, () => CODE_CHARS[Math.floor(Math.r
 /* ---------------- state ---------------- */
 let S = null;          // persisted game state
 const conns = {};      // pid -> DataConnection
-let peer = null, peerRetries = 0, tickTimer = null;
+let peer = null, peerRetries = 0, tickTimer = null, booted = false;   // booted: timers only act once the game is live (not behind the Resume dialog)
 
 function freshState(code, keepPlayers){
   const st = {
     v: 1, code: code || newCode(), phase: "lobby", qi: -1, game: [],
-    qStartAt: 0, qEndsAt: 0, answers: {}, revealed: {}, bonusOn: {},
+    qStartAt: 0, qEndsAt: 0, gapEndsAt: 0, gapTotalMs: 0, answers: {}, revealed: {}, bonusOn: {},
     players: {}, nextPid: 1, updatedAt: now(),
-    settings: { timer: DEFAULT_TIMER, speedBonus: true, shuffle: false, count: ALL_Q.length, kidsOnly: false }
+    settings: { timer: DEFAULT_TIMER, gap: DEFAULT_GAP, speedBonus: true, shuffle: false, count: ALL_Q.length, kidsOnly: false }
   };
   if (keepPlayers && S) {
     st.settings = S.settings; st.nextPid = S.nextPid;
@@ -418,6 +431,9 @@ function stateFor(pid){
     st.q = { text: q.q, choices: q.choices };
     if (S.phase === "question" && S.qEndsAt) { st.remainingMs = Math.max(0, S.qEndsAt - now()); st.timerMs = S.settings.timer * 1000; }
   }
+  if ((S.phase === "reveal" || S.phase === "board") && S.gapEndsAt) {
+    st.gapMs = Math.max(0, S.gapEndsAt - now()); st.gapTotalMs = S.gapTotalMs || st.gapMs; st.gapLast = S.qi + 1 >= S.game.length;
+  }
   if (S.phase === "reveal" && q) { st.correct = q.answer; st.gotBonus = !!(S.bonusOn[S.qi] && fastestCorrect(S.qi) === pid); }
   if (S.phase === "board" || S.phase === "final") {
     st.top = rk.slice(0, 5).map(r => ({ name: r.name, score: r.score, rank: r.rank }));
@@ -447,14 +463,20 @@ function start(){
   S.qi = 0; goQuestion();
 }
 function goQuestion(){
-  S.phase = "question"; S.qStartAt = now();
+  S.phase = "question"; S.qStartAt = now(); clearGap();
   S.qEndsAt = S.settings.timer > 0 ? S.qStartAt + S.settings.timer * 1000 : 0;
   save(); renderAll(); broadcast();
 }
 function reveal(){
   if (S.phase !== "question") return;
   S.phase = "reveal"; S.revealed[S.qi] = true; S.bonusOn[S.qi] = !!S.settings.speedBonus;
+  startGap();
   save(); renderAll(); broadcast();
+}
+function clearGap(){ S.gapEndsAt = 0; S.gapTotalMs = 0; }
+function startGap(){   // break countdown after a reveal; kept running (not restarted) on the scoreboard
+  const g = (S.settings.gap | 0) * 1000;
+  if (g > 0) { S.gapTotalMs = g; S.gapEndsAt = now() + g; } else clearGap();
 }
 function showBoard(){
   if (S.phase === "question") reveal();
@@ -465,12 +487,13 @@ function next(){
   if (S.phase === "lobby") return start();
   if (S.phase === "question") return reveal();
   if (S.phase === "reveal" || S.phase === "board") {
+    clearGap();
     if (S.qi + 1 < S.game.length) { S.qi++; goQuestion(); } else finish();
   }
 }
 function finish(){
   if (S.phase === "question") { S.revealed[S.qi] = true; S.bonusOn[S.qi] = !!S.settings.speedBonus; }
-  S.phase = "final"; save(); renderAll(); broadcast(); confetti();
+  S.phase = "final"; clearGap(); save(); renderAll(); broadcast(); confetti();
 }
 function advance(){ // Space / Enter: lobby → question → reveal → scoreboard → next question …
   if (S.phase === "lobby") start();
@@ -490,7 +513,10 @@ function newGame(){
 
 /* timer tick */
 function tick(){
-  if (S.phase !== "question") { $("timer").style.visibility = "hidden"; return; }
+  if (!S || !booted) return;
+  tickGap();
+  if (S.phase !== "question") { $("timer").style.visibility = "hidden"; $("timer").style.display = S.phase === "reveal" && S.gapEndsAt ? "none" : ""; return; }
+  $("timer").style.display = "";
   if (!S.qEndsAt) { $("timer").style.visibility = "hidden"; return; }
   $("timer").style.visibility = "visible";
   const left = Math.max(0, S.qEndsAt - now()), total = S.settings.timer * 1000 || 1;
@@ -498,6 +524,23 @@ function tick(){
   $("timerFg").style.strokeDashoffset = (276.46 * (1 - left / total)).toFixed(1);
   $("timer").classList.toggle("low", left < 5000);
   if (left <= 0) reveal();
+}
+function tickGap(){
+  const left = renderGap();
+  if (left === 0 && !modalOpen()) next();   // same as pressing N; next() clears the gap (or finish() on the last question)
+}
+function renderGap(){   // draws the break countdown; returns ms left (or null when no break is running)
+  const el = $("gap");
+  const active = (S.phase === "reveal" || S.phase === "board") && S.gapEndsAt > 0;
+  el.classList.toggle("on", active);
+  if (!active) return null;
+  const host = S.phase === "board" ? document.querySelector("#board .boardHead") : document.querySelector("#question .qtop");
+  if (el.parentNode !== host) host.appendChild(el);
+  const left = Math.max(0, S.gapEndsAt - now()), total = S.gapTotalMs || 1, sec = Math.ceil(left / 1000);
+  $("gapLabel").innerHTML = (S.qi + 1 >= S.game.length ? "🏆 Final results in" : "⏭ Next question in") + " <b>" + sec + "</b>s";
+  $("gapFill").style.width = (100 * left / total).toFixed(1) + "%";
+  el.classList.toggle("low", sec <= 3);
+  return left;
 }
 tickTimer = setInterval(tick, 200);
 
@@ -614,6 +657,7 @@ function renderAll(){
   else if (S.phase === "board") { show("board"); renderBoard(); }
   else if (S.phase === "final") { show("final"); renderFinal(); }
   renderPlayersOnly();
+  if (booted) renderGap();
 }
 
 /* ---------------- settings ---------------- */
@@ -623,14 +667,18 @@ function initSettings(){
   sc.innerHTML = opts.map(n => '<option value="' + n + '">' + (n === ALL_Q.length ? "All " + n : n) + "</option>").join("");
   const st = S.settings;
   const tsel = $("setTimer");
+  if (!Number.isFinite(st.gap)) st.gap = DEFAULT_GAP;   // older saved games had no break setting
+  const gsel = $("setGap");
+  for (const v of [DEFAULT_GAP, st.gap]) if (!gsel.querySelector('option[value="' + v + '"]')) { const o = document.createElement("option"); o.value = String(v); o.textContent = v + " s"; gsel.appendChild(o); }
+  gsel.value = String(st.gap);
   for (const v of [DEFAULT_TIMER, st.timer]) if (!tsel.querySelector('option[value="' + v + '"]')) { const o = document.createElement("option"); o.value = String(v); o.textContent = v + " s"; tsel.appendChild(o); }
   tsel.value = String(st.timer); $("setBonus").checked = !!st.speedBonus; $("setShuffle").checked = !!st.shuffle; $("setKids").checked = !!st.kidsOnly;
   sc.value = String(opts.includes(st.count) ? st.count : ALL_Q.length);
   const upd = () => {
-    S.settings = { timer: +$("setTimer").value, speedBonus: $("setBonus").checked, shuffle: $("setShuffle").checked, count: +sc.value, kidsOnly: $("setKids").checked };
+    S.settings = { timer: +$("setTimer").value, gap: +$("setGap").value, speedBonus: $("setBonus").checked, shuffle: $("setShuffle").checked, count: +sc.value, kidsOnly: $("setKids").checked };
     save();
   };
-  ["setTimer", "setBonus", "setShuffle", "setCount", "setKids"].forEach(id => $(id).addEventListener("change", upd));
+  ["setTimer", "setGap", "setBonus", "setShuffle", "setCount", "setKids"].forEach(id => $(id).addEventListener("change", upd));
   $("setKids").addEventListener("change", () => { const k = ALL_Q.filter(q => q.kid).length; if ($("setKids").checked) toast("🧒 " + k + " kid-friendly questions"); });
 }
 
@@ -696,7 +744,11 @@ function boot(){
   try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null"); } catch(e){}
   const fresh = new URLSearchParams(location.search).has("new");
   const usable = saved && saved.v === 1 && !fresh && now() - saved.updatedAt < 18 * 3600 * 1000 && (saved.phase !== "lobby" || Object.keys(saved.players || {}).length);
-  const go = () => { initSettings(); renderAll(); startPeer(); if (S.phase === "final") renderFinal(); };
+  const go = () => {
+    if (!S.settings) S.settings = freshState().settings;
+    if (!Number.isFinite(S.settings.gap)) S.settings.gap = DEFAULT_GAP;   // saved before the break timer existed
+    booted = true; initSettings(); renderAll(); startPeer(); if (S.phase === "final") renderFinal();
+  };
   if (usable) {
     S = saved;
     modal("Resume the previous game?", "Room <b>" + esc(saved.code) + "</b> · " + Object.keys(saved.players).length + " players · " +
@@ -704,6 +756,10 @@ function boot(){
       "<br><small>Phones reconnect automatically and keep their scores.</small>",
       [["Start fresh", () => { S = freshState(); save(); go(); }], ["Resume", () => {
         if (S.phase === "question" && S.qEndsAt && S.qEndsAt < now()) S.qEndsAt = now() + 5000; // short grace period after a refresh
+        if ((S.phase === "reveal" || S.phase === "board") && S.gapEndsAt && S.gapEndsAt < now() + 5000) {   // same grace for the break
+          S.gapEndsAt = now() + 5000; S.gapTotalMs = Math.max(S.gapTotalMs || 0, 5000);
+        }
+        if (S.phase !== "reveal" && S.phase !== "board") S.gapEndsAt = 0;
         go();
       }, true]]);
     renderAll();

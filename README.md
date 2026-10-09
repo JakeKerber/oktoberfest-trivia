@@ -31,7 +31,8 @@ The internet is only used to set up those connections. Game traffic goes phone â
 
 1. Open the hosted URL (see Hosting below) on the laptop, connect the laptop to the TV, and press **F** for fullscreen.
 2. Guests scan the QR code (or go to the URL and type the room code), then enter a name and an optional team name.
-3. In the lobby, choose: timer (off/15/20/30/45 s), speed bonus, shuffle, number of questions, kid-friendly only.
+3. In the lobby, choose: timer per question (off/15/20/30/45/60 s, default `TIMER_SECONDS` in `questions.js`),
+   break between questions (off/5/10/15/20/30 s, default `GAP_SECONDS`), speed bonus, shuffle, number of questions, kid-friendly only.
    To remove a player (for example, a silly name), click their name chip.
 4. Play with the keyboard or the buttons at the bottom:
 
@@ -45,6 +46,12 @@ The internet is only used to set up those connections. Game traffic goes phone â
 | **E** | End the game early and go to the final leaderboard |
 | **F** | Fullscreen |
 | **H** | Hide/show the control bar |
+
+**â˜• Break timer:** when an answer is revealed (by the timer, Space, R or N), a "Next question in Ns" countdown
+appears on the TV and on the phones. When it reaches zero the game moves to the next question automatically
+(after the last question it shows "Final results in Ns" and then the final leaderboard). During the break you can
+still press Space to show the scoreboard (the same countdown keeps running), or Space/N to skip ahead right away.
+Set Break to **Off** to run the whole game by hand, as before.
 
 **ðŸ”„ New game** keeps everyone in the room and resets the scores.
 To force a completely new room, open `index.html?new`.
